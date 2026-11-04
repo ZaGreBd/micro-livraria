@@ -20,12 +20,23 @@
         </section>
         <div class="box cta">
             <p class="has-text-centered">Uma simples livraria utilizando microservices</p>
+            <div class="field has-addons has-addons-centered mt-3">
+                <div class="control">
+                    <input class="input" type="number" min="1" id="search-id" placeholder="ID do produto" />
+                </div>
+                <div class="control">
+                    <button class="button is-info" id="button-search">Buscar por ID</button>
+                </div>
+                <div class="control">
+                    <button class="button" id="button-show-all">Mostrar todos</button>
+                </div>
+            </div>
         </div>
         <section class="container">
             <div class="columns books"></div>
         </section>
 
-        <footer class="footer has-text-centered">Feito com ❤️ na UFMG</footer>
+        <footer class="footer has-text-centered">Feito com ❤️ na UFMG | Adaptado com 💜 na UFMS</footer>
 
         <script src="https://unpkg.com/bulma-modal-fx/dist/js/modal-fx.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

@@ -228,9 +228,41 @@ function loadReviewCounts() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function renderBooks(list) {
     const books = document.querySelector('.books');
+    books.innerHTML = '';
 
+    list.forEach((book) => {
+        books.appendChild(newBook(book));
+    });
+
+    document.querySelectorAll('.button-shipping').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id');
+            const cep = document.querySelector(`.book[data-id="${id}"] input`).value;
+            calculateShipping(id, cep);
+        });
+    });
+
+    document.querySelectorAll('.button-buy').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
+        });
+    });
+
+    // Add event listeners for the review buttons
+    document.querySelectorAll('.button-reviews').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id') || e.target.parentElement.getAttribute('data-id');
+            fetchReviews(id);
+        });
+    });
+
+    // Load initial review counts
+    loadReviewCounts();
+}
+
+function loadProducts() {
     fetch('/api/products')
         .then((data) => {
             if (data.ok) {
@@ -240,38 +272,58 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then((data) => {
             if (data) {
-                data.forEach((book) => {
-                    books.appendChild(newBook(book));
-                });
-
-                document.querySelectorAll('.button-shipping').forEach((btn) => {
-                    btn.addEventListener('click', (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        const cep = document.querySelector(`.book[data-id="${id}"] input`).value;
-                        calculateShipping(id, cep);
-                    });
-                });
-
-                document.querySelectorAll('.button-buy').forEach((btn) => {
-                    btn.addEventListener('click', (e) => {
-                        swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
-                    });
-                });
-
-                // Add event listeners for the review buttons
-                document.querySelectorAll('.button-reviews').forEach((btn) => {
-                    btn.addEventListener('click', (e) => {
-                        const id = e.target.getAttribute('data-id') || e.target.parentElement.getAttribute('data-id');
-                        fetchReviews(id);
-                    });
-                });
-
-                // Load initial review counts
-                loadReviewCounts();
+                renderBooks(data);
             }
         })
         .catch((err) => {
             swal('Erro', 'Erro ao listar os produtos', 'error');
             console.error(err);
         });
+}
+
+function searchProduct(id) {
+    if (!id) {
+        swal('Atenção', 'Digite o ID do produto', 'warning');
+        return;
+    }
+
+    fetch('/api/product/' + id)
+        .then((data) => {
+            if (data.ok) {
+                return data.json();
+            }
+            throw data.statusText;
+        })
+        .then((product) => {
+            // Um produto inexistente pode voltar vazio, sem id
+            if (!product || !product.id) {
+                throw 'Produto não encontrado';
+            }
+            renderBooks([product]);
+        })
+        .catch((err) => {
+            swal('Erro', `Produto ${id} não encontrado ou erro ao consultar`, 'error');
+            console.error(err);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('search-id');
+
+    document.getElementById('button-search').addEventListener('click', () => {
+        searchProduct(searchInput.value.trim());
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            searchProduct(searchInput.value.trim());
+        }
+    });
+
+    document.getElementById('button-show-all').addEventListener('click', () => {
+        searchInput.value = '';
+        loadProducts();
+    });
+
+    loadProducts();
 });
